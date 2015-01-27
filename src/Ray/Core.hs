@@ -5,9 +5,10 @@
 module Ray.Core where
 
 import Ray.Types
-import Ray.Camera (getInverseCamMatrix)
-import Ray.Image (asImg)
+import Ray.Camera
+import Ray.Image
 import Ray.Shapes
+import Ray.Algorithms
 
 import Codec.Picture
 import Linear
@@ -46,20 +47,25 @@ enumCoords (V2 xres yres) = [V2 x y | x <- [0..xres-1], y <- [0..yres-1]]
 enumPixelCoords :: M [V2 Int]
 enumPixelCoords = enumCoords <$> view (algorithms . resolution)
 
-mkImgSample :: M44 Double -> V2 Double -> ImgSample Ray
-mkImgSample m xy = ImgSample xy $ Ray origin (globalRay m xy) 1
+mkImgSample :: P3D -> V2 Double -> M44 Double -> V2 Double -> ImgSample Ray
+mkImgSample o invRes m xy =
+    ImgSample xy $ Ray o (globalRay m (normCoords xy) .-. o) 1
+    where normCoords u = 2 * invRes * u - 1
 
-globalRay :: M44 Double -> V2 Double -> V3 Double
-globalRay m u = view _xyz $ m !* camRay u
+globalRay :: M44 Double -> V2 Double -> P3D
+globalRay m u = P $ normalizePoint $ m !* camRay u
 
 camRay :: V2 Double -> V4 Double
-camRay (V2 x y) = V4 x y 1 1
+camRay (V2 x y) = V4 x y (-1) 1
 
 getCameraRays :: M (Array (V2 Int) [ImgSample Ray])
 getCameraRays = do
     m <- getInverseCamMatrix
     ss <- getSampleLocs
-    return $ (fmap . fmap) (mkImgSample m) ss
+    o <- view $ scene . camera . eye
+    res <- view (algorithms . resolution)
+    let invRes = 1 / (r2f <$> res)
+    return $ (fmap . fmap) (mkImgSample o invRes m) ss
 
 getSampleLocs :: M (Array (V2 Int) [V2 Double])
 getSampleLocs = do
@@ -68,7 +74,7 @@ getSampleLocs = do
     pxs <- enumPixelCoords
     ss <- traverse (sampler n) pxs
     res <- view $ algorithms . resolution
-    return $ array (0, res) $ zip pxs ss
+    return $ array (0, res - 1) $ zip pxs ss
 
 getIntersection :: Ray -> M (Maybe Intersection)
 getIntersection r = intersect <$> view scene <*> pure r
@@ -83,3 +89,10 @@ radiance ray = do
      Just isect -> integrator n ray isect
 
 -- r2f :: Spectrum -> PixelF -- Double -> Float
+
+testScene = Scene {
+    _camera = Camera (P (V3 0 0 5)) (P (V3 0 0 0)) (V3 0 1 0) (27 * pi / 180) 1,
+    _background = 0, -- black
+    _lights = [PointLight (P (V3 8 0 8)) 10],
+    _visibles = [Object (Sphere (P (V3 0 0 0)) 1) 0.5]
+    }

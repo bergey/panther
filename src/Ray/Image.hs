@@ -11,8 +11,13 @@ import Linear
 import Data.Array
 import qualified Data.ByteString.Lazy as BS
 
+clamp :: Float -> Float
+clamp x | x > 1 = 1
+clamp x | x < 0 = 0
+clamp x = x
+
 to8Bit :: Image PixelF -> Image Pixel8
-to8Bit = pixelMap $ \px -> round (255 * px)
+to8Bit = pixelMap $ \px -> round (255 * clamp px)
 
 toJpg :: Image PixelF -> Image PixelYCbCr8
 toJpg = convertImage . (promoteImage :: Image Pixel8 -> Image PixelRGB8) . to8Bit

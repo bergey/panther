@@ -11,7 +11,7 @@ import           Linear
 import           Linear.Affine
 import           Linear.Projection
 
-import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional)
+import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, Show)
 import Control.Lens.TH
 import Control.Monad.Identity
 import Control.Monad.Reader
@@ -34,19 +34,19 @@ type Spectrum = Double
 
 -- | A ray is represented as a starting point and a vector.  The
 -- vector need not be normalized.
-data Ray = Ray !P3D !V3D !Spectrum
+data Ray = Ray !P3D !V3D !Spectrum deriving Show
 
 -- XXX Will this be true?
 -- A Ray carries an arbitrary tag, typically representing the light
 -- (if tracing from lamp to eye) or the accumulated absorption (if
 -- tracing from eye to lamp).
 
-data Shape = Sphere !P3D !Double
+data Shape = Sphere !P3D !Double deriving Show
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
 type Material = Double -- ^ diffuse Reflectance
 
-data Object = Object !Shape !Material
+data Object = Object !Shape !Material deriving Show
 
 -- | Normal & material are not strict fields, since they may not be used.
 data Intersection = Intersection {
@@ -59,6 +59,7 @@ type IntersectionTest = Ray -> Maybe Intersection
 
 
 data Light = PointLight !P3D !Double -- ^ brightness
+           deriving Show
 
 -- | follows Haines's NFF: http://tog.acm.org/resources/SPD/NFF.TXT
 data Camera = Camera {
@@ -67,14 +68,14 @@ data Camera = Camera {
     _upDir :: !V3D, -- ^ calculations assume this is perpendicular to eye .-. lookAt, normalized
     _fov :: !Double, -- ^ y direction, in radians
     _nearPlane :: !Double -- ^ distance to image plane
-    }
+    } deriving Show
 
 data Scene = Scene {
     _camera :: Camera,
     _background :: Spectrum,
     _lights :: [Light],
     _visibles :: [Object]
-    }
+    } deriving Show
 
 r2f :: (Real a, Fractional b) => a -> b
 r2f = realToFrac
@@ -112,7 +113,7 @@ type SurfaceIntegrator = Int -> Ray -> Intersection -> M Spectrum
 data  ImgSample a = ImgSample {
     _sampleLocation :: !(V2 Double),
     _sampleValue :: !a
-    } deriving (Functor, Foldable, Traversable)
+    } deriving (Functor, Foldable, Traversable, Show)
 
 type ImageReconstructor =
     Array (V2 Int) [ImgSample Spectrum] -> Array (V2 Int) Spectrum
