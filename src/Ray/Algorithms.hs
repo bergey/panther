@@ -3,9 +3,14 @@
 module Ray.Algorithms where
 
 import Ray.Types
+import Ray.Shapes
 
 import Linear
+import Linear.Affine
+
 import Control.Applicative
+import Control.Lens
+import Data.Maybe
 
 -- import qualified System.Random.MWC as R
 
@@ -14,7 +19,7 @@ naiveRenderer res = Algo {
     _samplesPerCameraRay = 10,
     _resolution = res,
     _imageSampler = onGridSampler,
-    _surfaceIntegrator = ambientIntegrator,
+    _surfaceIntegrator = directLightIntegrator,
     _imageReconstructor = boxFilter
     }
 
@@ -44,3 +49,30 @@ boxFilter = fmap $ mean . fmap _sampleValue
 -- color of the surface directly.
 ambientIntegrator :: SurfaceIntegrator
 ambientIntegrator _n _ (Intersection _ _ b) = return $ b
+
+-- | @directLightIntegrator@ measures direct lighting, ignoring any
+-- paths with multiple bounces.
+directLightIntegrator :: SurfaceIntegrator
+directLightIntegrator n (Ray p u _s) (Intersection ds _n m) = do
+    ls <- view $ scene . lights
+    os <- view $ scene . visibles
+    let
+        q = p .+^ u ^* sqrt ds
+        rays = [Ray q (lightDirection q l) 1 | l <- ls]
+        intersections = intersect os <$> rays
+        li = catMaybes $ zipWith (unshadowed q) intersections ls
+    return $ m * sum li
+
+unshadowed :: P3D -> Maybe Intersection -> Light -> Maybe Spectrum
+unshadowed _ (Just _) _ = Nothing
+unshadowed p Nothing l = Just $ lightSpectrum p l
+
+lightDirection :: P3D -> Light -> V3D
+lightDirection u (PointLight v _) = v .-. u
+lightDirection _ (ParallelLight v _) = v
+
+-- | light spectrum reduced by distance.  This does not account for
+-- intervening objects or participating media.
+lightSpectrum :: P3D -> Light -> Spectrum
+lightSpectrum u (PointLight v s) = s / qd v u
+lightSpectrum _ (ParallelLight _ s) = s

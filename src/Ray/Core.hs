@@ -80,7 +80,7 @@ getIntersection :: Ray -> M (Maybe Intersection)
 getIntersection r = intersect <$> view scene <*> pure r
 
 radiance :: Ray -> M Spectrum
-radiance ray(Ray _ _ s) = do
+radiance ray@(Ray _ _ s) = do
     x <- getIntersection ray
     n <- view $ algorithms . samplesPerCameraRay
     integrator <- view $ algorithms . surfaceIntegrator
@@ -89,10 +89,3 @@ radiance ray(Ray _ _ s) = do
      Just isect -> (s * ) <$> integrator n ray isect
 
 -- r2f :: Spectrum -> PixelF -- Double -> Float
-
-testScene = Scene {
-    _camera = Camera (P (V3 0 0 5)) (P (V3 0 0 0)) (V3 0 1 0) (27 * pi / 180) 1,
-    _background = 0, -- black
-    _lights = [PointLight (P (V3 8 0 8)) 10],
-    _visibles = [Object (Sphere (P (V3 0 0 0)) 1) 0.5]
-    }

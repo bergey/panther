@@ -48,17 +48,19 @@ type Material = Double -- ^ diffuse Reflectance
 
 data Object = Object !Shape !Material deriving Show
 
--- | Normal & material are not strict fields, since they may not be used.
+-- | Normal & material are not strict fields, since they may not be
+-- used.  @Intersection@ stores the squared distance, as it is often
+-- less expensive to calculate, and often the distance is not needed.
 data Intersection = Intersection {
-    _distance :: !Double,
+    _distanceSq :: !Double,
     _normal :: Dir,
     _material :: Material
     }
 
 type IntersectionTest = Ray -> Maybe Intersection
 
-
-data Light = PointLight !P3D !Double -- ^ brightness
+data Light = PointLight !P3D !Spectrum
+           | ParallelLight !V3D !Spectrum
            deriving Show
 
 -- | follows Haines's NFF: http://tog.acm.org/resources/SPD/NFF.TXT

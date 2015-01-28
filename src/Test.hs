@@ -30,10 +30,7 @@ import Control.Applicative
 main :: IO ()
 main = do
     img <- render (naiveRenderer $ V2 640 480) testScene
-    writePng "raytracer-test.png" $ to8Bit img
-    -- saveJpeg "raytracer-test.jpg" img
-    -- BS.writeFile "jp-debug.png" . encodePng $ generateImage lookup 640 480 where
-    --   lookup _ _ = (128 :: Word8)
+    writePng "raytracer-test.png" $ to16Bit img
 
 run :: M a -> IO a
 run m = runM m (naiveRenderer $ V2 640 480) testScene
@@ -48,3 +45,10 @@ getRay u = run $ do
     res <- view (algorithms . resolution)
     let invRes = 1 / (r2f <$> res)
     return $ mkImgSample o invRes m u
+
+testScene = Scene {
+    _camera = Camera (P (V3 0 0 5)) (P (V3 0 0 0)) (V3 0 1 0) (27 * pi / 180) 1,
+    _background = 0, -- black
+    _lights = [PointLight (P (V3 8 0 8)) 10],
+    _visibles = [Object (Sphere (P (V3 0 0 0)) 1) 1]
+    }

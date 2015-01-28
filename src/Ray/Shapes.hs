@@ -39,7 +39,7 @@ instance Intersectable Object where
 instance Intersectable a => Intersectable [a] where
     intersect os ray = case catMaybes . distribute (intersect <$> os) $ ray of
         [] -> Nothing
-        is -> Just $ minimumBy (comparing _distance) is
+        is -> Just $ minimumBy (comparing _distanceSq) is
 
 instance Intersectable Scene where
     intersect = intersect . _visibles

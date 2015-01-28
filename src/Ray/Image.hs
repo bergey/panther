@@ -19,6 +19,9 @@ clamp x = x
 to8Bit :: Image PixelF -> Image Pixel8
 to8Bit = pixelMap $ \px -> round (255 * clamp px)
 
+to16Bit :: Image PixelF -> Image Pixel16
+to16Bit = pixelMap $ \px -> round (65536 * px)
+
 toJpg :: Image PixelF -> Image PixelYCbCr8
 toJpg = convertImage . (promoteImage :: Image Pixel8 -> Image PixelRGB8) . to8Bit
 
