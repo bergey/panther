@@ -40,5 +40,7 @@ boxFilter = fmap $ mean . fmap _sampleValue
 
 -- uniformSampler2D n = sequence . replicate n $ do
 
+-- | @ambientintegrator@ ignores light sources, and returns the
+-- color of the surface directly.
 ambientIntegrator :: SurfaceIntegrator
-ambientIntegrator _n (Ray _ _ a) (Intersection _ _ b) = return $ a * b
+ambientIntegrator _n _ (Intersection _ _ b) = return $ b
