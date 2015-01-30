@@ -32,7 +32,7 @@ main = do
     img <- render (naiveRenderer (V2 640 480)
                    & surfaceIntegrator .~ oneRandomLightIntegrator)
            testScene
-    writePng "raytracer-test.png" $ to16Bit img
+    writePng "raytracer-test.png" $ pixelMap asRGB16 img
 
 run :: M a -> IO a
 run m = runM m (naiveRenderer $ V2 640 480) testScene

@@ -28,7 +28,7 @@ type V3D = V3 Double
 type P3D = Point V3 Double
 type Dir = V3D
 
-type Spectrum = Double
+type Spectrum = V3D
 
 -- TODO is it easier to require normalized direction vector?
 -- Certainly it doesn't change the denotation of the type.
@@ -47,7 +47,7 @@ data Shape = Sphere !P3D !Double
              deriving Show
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
-type Material = Double -- ^ diffuse Reflectance
+type Material = V3D -- ^ diffuse Reflectance
 
 data Object = Object !Shape !Material deriving Show
 

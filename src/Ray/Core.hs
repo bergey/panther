@@ -19,14 +19,13 @@ import Control.Applicative
 import Data.Traversable
 import Control.Lens
 
--- IO needed for future PRNG
-render :: Algo -> Scene -> IO (Image PixelF)
+render :: Algo -> Scene -> IO (Image PixelRGBF)
 render = runM getImg
 
 renderArray :: Algo -> Scene -> IO (Array (V2 Int) Spectrum)
 renderArray = runM getSpectralArray
 
-getImg :: M (Image PixelF)
+getImg :: M (Image PixelRGBF)
 getImg = asImg <$> view (algorithms . resolution) <*> getSpectralArray
 
 getSpectralArray :: M (Array (V2 Int) Spectrum)

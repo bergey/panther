@@ -85,7 +85,7 @@ lightDirection _ (ParallelLight v _) = v
 -- | light spectrum reduced by distance.  This does not account for
 -- intervening objects or participating media.
 lightSpectrum :: P3D -> Light -> Spectrum
-lightSpectrum u (PointLight v s) = s / qd v u
+lightSpectrum u (PointLight v s) = s ^/ qd v u
 lightSpectrum _ (ParallelLight _ s) = s
 
 -- | @oneRandomlightintegrator@ picks a light at random for each sample, and
