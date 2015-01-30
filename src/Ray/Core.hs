@@ -76,7 +76,7 @@ getSampleLocs = do
     res <- view $ algorithms . resolution
     return $ array (0, res - 1) $ zip pxs ss
 
-getIntersection :: Ray -> M (Maybe Intersection)
+getIntersection :: Ray -> M (Maybe (Intersection Spectrum))
 getIntersection r = intersect <$> view scene <*> pure r
 
 radiance :: Ray -> M Spectrum

@@ -42,7 +42,9 @@ data Ray = Ray !P3D !V3D !Spectrum deriving Show
 -- (if tracing from lamp to eye) or the accumulated absorption (if
 -- tracing from eye to lamp).
 
-data Shape = Sphere !P3D !Double deriving Show
+data Shape = Sphere !P3D !Double
+    | Plane !V3D !Double
+             deriving Show
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
 type Material = Double -- ^ diffuse Reflectance
@@ -52,13 +54,11 @@ data Object = Object !Shape !Material deriving Show
 -- | Normal & material are not strict fields, since they may not be
 -- used.  @Intersection@ stores the squared distance, as it is often
 -- less expensive to calculate, and often the distance is not needed.
-data Intersection = Intersection {
+data Intersection a = Intersection {
     _distanceSq :: !Double,
     _normal :: Dir,
-    _material :: Material
-    }
-
-type IntersectionTest = Ray -> Maybe Intersection
+    _material :: a
+    } deriving (Functor)
 
 data Light = PointLight !P3D !Spectrum
            | ParallelLight !V3D !Spectrum
@@ -124,7 +124,7 @@ type DiscreteSampler = Int -> Int -> M [Int]
 
 type DirectionSampler = Int -> M [Dir]
 
-type SurfaceIntegrator = Int -> Ray -> Intersection -> M Spectrum
+type SurfaceIntegrator = Int -> Ray -> Intersection Spectrum -> M Spectrum
 
 data  ImgSample a = ImgSample {
     _sampleLocation :: !(V2 Double),
@@ -140,3 +140,4 @@ makeLenses ''Camera
 makeLenses ''MRead
 makeLenses ''Scene
 makeLenses ''ImgSample
+makeLenses ''Intersection

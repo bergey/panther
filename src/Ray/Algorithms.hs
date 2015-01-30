@@ -65,7 +65,7 @@ directLightIntegrator n r@(Ray p u _s) i@(Intersection ds _n m) = do
     li <- traverse (directLightContribution q) ls
     return $ m * sum li
 
-intersectionPt :: Ray -> Intersection -> P3D
+intersectionPt :: Ray -> Intersection a -> P3D
 intersectionPt (Ray p u _) (Intersection ds _ _) = p .+^ u ^* sqrt ds
 
 directLightContribution :: P3D -> Light -> M Spectrum
@@ -74,7 +74,7 @@ directLightContribution q l = do
     let ray = Ray q (lightDirection q l) 1
     return $ unshadowed q (intersect os ray) l
 
-unshadowed :: P3D -> Maybe Intersection -> Light -> Spectrum
+unshadowed :: P3D -> Maybe (Intersection Spectrum) -> Light -> Spectrum
 unshadowed _ (Just _) _ = 0
 unshadowed p Nothing l = lightSpectrum p l
 
