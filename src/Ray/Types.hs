@@ -10,6 +10,7 @@ module Ray.Types where
 import           Linear
 import           Linear.Affine
 import           Linear.Projection
+import System.Random.MWC
 
 import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, Show)
 import Control.Lens.TH
@@ -93,13 +94,21 @@ data Algo = Algo {
 
 data MRead = MRead {
     _algorithms :: Algo,
-    _scene :: Scene
+    _scene :: Scene,
+    _gen :: GenIO
     }
 
-type M = ReaderT MRead Identity --(StateT s Identity)
+type M = ReaderT MRead IO
 
 runM :: M a -> Algo -> Scene -> IO a
-runM ma a s = return $ runReader ma (MRead a s)
+runM ma a s = do
+    gen <- create
+    runReaderT ma (MRead a s gen)
+
+runMSystem :: M a -> Algo -> Scene -> IO a
+runMSystem ma a s = do
+    gen <- createSystemRandom
+    runReaderT ma (MRead a s gen)
 
 -- | Given the number of samples per pixel, and the image resolution,
 -- return a set of sample coordinates, on the image plane.
