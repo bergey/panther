@@ -88,6 +88,7 @@ data Algo = Algo {
     _samplesPerCameraRay :: Int,
     _resolution :: V2 Int,
     _imageSampler :: ImageSampler,
+    _discreteSampler :: DiscreteSampler,
     _surfaceIntegrator :: SurfaceIntegrator,
     _imageReconstructor :: ImageReconstructor
     }
@@ -116,6 +117,10 @@ type ImageSampler = Int -> V2 Int -> M [V2 Double]
 
 -- type Sampler1D = Int -> M [Double]
 -- type Sampler2D = Int -> M [V2D]
+
+-- | sample range, number of samples.  Returned values should be in
+-- the range [0,r]
+type DiscreteSampler = Int -> Int -> M [Int]
 
 type DirectionSampler = Int -> M [Dir]
 

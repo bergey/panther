@@ -7,10 +7,14 @@ import Ray.Shapes
 
 import Linear
 import Linear.Affine
+import System.Random.MWC
 
 import Control.Applicative
 import Control.Lens
 import Data.Maybe
+import Data.List (genericLength)
+import Control.Monad
+import Control.Monad.Reader
 
 -- import qualified System.Random.MWC as R
 
@@ -19,6 +23,7 @@ naiveRenderer res = Algo {
     _samplesPerCameraRay = 10,
     _resolution = res,
     _imageSampler = onGridSampler,
+    _discreteSampler = uniformDiscreteSampler,
     _surfaceIntegrator = directLightIntegrator,
     _imageReconstructor = boxFilter
     }
@@ -51,21 +56,27 @@ ambientIntegrator :: SurfaceIntegrator
 ambientIntegrator _n _ (Intersection _ _ b) = return $ b
 
 -- | @directLightIntegrator@ measures direct lighting, ignoring any
--- paths with multiple bounces.
+-- paths with multiple bounces.  It ignores the number of samples
+-- parameter.
 directLightIntegrator :: SurfaceIntegrator
-directLightIntegrator n (Ray p u _s) (Intersection ds _n m) = do
+directLightIntegrator n r@(Ray p u _s) i@(Intersection ds _n m) = do
+    let q = intersectionPt r i
     ls <- view $ scene . lights
-    os <- view $ scene . visibles
-    let
-        q = p .+^ u ^* sqrt ds
-        rays = [Ray q (lightDirection q l) 1 | l <- ls]
-        intersections = intersect os <$> rays
-        li = catMaybes $ zipWith (unshadowed q) intersections ls
+    li <- traverse (directLightContribution q) ls
     return $ m * sum li
 
-unshadowed :: P3D -> Maybe Intersection -> Light -> Maybe Spectrum
-unshadowed _ (Just _) _ = Nothing
-unshadowed p Nothing l = Just $ lightSpectrum p l
+intersectionPt :: Ray -> Intersection -> P3D
+intersectionPt (Ray p u _) (Intersection ds _ _) = p .+^ u ^* sqrt ds
+
+directLightContribution :: P3D -> Light -> M Spectrum
+directLightContribution q l = do
+    os <- view $ scene . visibles
+    let ray = Ray q (lightDirection q l) 1
+    return $ unshadowed q (intersect os ray) l
+
+unshadowed :: P3D -> Maybe Intersection -> Light -> Spectrum
+unshadowed _ (Just _) _ = 0
+unshadowed p Nothing l = lightSpectrum p l
 
 lightDirection :: P3D -> Light -> V3D
 lightDirection u (PointLight v _) = v .-. u
@@ -76,3 +87,28 @@ lightDirection _ (ParallelLight v _) = v
 lightSpectrum :: P3D -> Light -> Spectrum
 lightSpectrum u (PointLight v s) = s / qd v u
 lightSpectrum _ (ParallelLight _ s) = s
+
+-- | @oneRandomlightintegrator@ picks a light at random for each sample, and
+-- calculates the direct contribution from that light.
+oneRandomLightIntegrator :: SurfaceIntegrator
+oneRandomLightIntegrator n r i@(Intersection _ _ m) = do
+    let q = intersectionPt r i
+    allLights <- view $ scene . lights
+    lightSamples <- choose allLights n
+    li <- traverse (directLightContribution q) lightSamples
+    return $ m * genericLength allLights * sum li
+
+-- TODO use distributions from statistics pkg here?
+-- | @choose as n@ picks n random samples from as (uniformly distributed)
+choose :: [a] -> Int -> M [a]
+choose as n = do
+    sampler <- view $ algorithms . discreteSampler
+    is <- sampler l n
+    return $ fmap (as !!) is
+    where
+      l = length as
+
+uniformDiscreteSampler :: DiscreteSampler
+uniformDiscreteSampler r n = replicateM n $ do
+    g <- view gen
+    liftIO $ uniformR (0,r-1) g

@@ -29,7 +29,9 @@ import Control.Applicative
 
 main :: IO ()
 main = do
-    img <- render (naiveRenderer $ V2 640 480) testScene
+    img <- render (naiveRenderer (V2 640 480)
+                   & surfaceIntegrator .~ oneRandomLightIntegrator)
+           testScene
     writePng "raytracer-test.png" $ to16Bit img
 
 run :: M a -> IO a
