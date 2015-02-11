@@ -16,18 +16,25 @@ import Linear.Affine
 
 import Control.Applicative
 import Control.Lens
+import Data.Maybe
 
 main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "Panther Tests" [
-    testProperty "intersect sphere at origin with radius 1" $
-    \dir -> dir /= 0 ==>
-            intersect (Sphere 0 1) (Ray 0 (normalize dir) 0) ^?! _Just . distanceSq =~ 1,
-    testProperty "sphere has fixed r" $
-    \(s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
-                              intersect s (Ray c (normalize dir) 0) ^?! _Just . distanceSq =~ r * r
+    testGroup "sphere" [
+         testProperty "intersect sphere at origin with radius 1" $
+         \dir -> dir /= 0 ==>
+                 intersect (Sphere 0 1) (Ray 0 (normalize dir) 0) ^?! _Just . distanceSq =~ 1,
+         testProperty "sphere has fixed r" $
+         \(s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
+                                   intersect s (Ray c (normalize dir) 0) ^?! _Just . distanceSq =~ r * r
+         ],
+    testGroup "plane" [
+        testProperty "all rays intersect a plane" $
+        \(plane, ray) -> isJust $ intersect (plane :: Plane) ray
+                      ]
     ]
 
 instance Arbitrary a => Arbitrary (V2 a) where
@@ -43,7 +50,7 @@ instance (Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a) where
     arbitrary = P <$> arbitrary
 
 instance Arbitrary Ray where
-    arbitrary = Ray <$> arbitrary <*> arbitrary <*> arbitrary
+    arbitrary = Ray <$> arbitrary <*> (getNonZero <$> arbitrary) <*> arbitrary
 
 instance Arbitrary Sphere where
     arbitrary = Sphere <$> arbitrary <*> arbitrary
