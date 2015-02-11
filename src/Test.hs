@@ -48,9 +48,12 @@ getRay u = run $ do
     let invRes = 1 / (r2f <$> res)
     return $ mkImgSample o invRes m u
 
+cam :: Double -> Camera
+cam θ = Camera (p3 (5 * cos θ) (5 * sin θ) 0) 0 (V3 0 0 1) (27 * pi / 180) 1
+
 testScene = Scene {
-    _camera = Camera (P (V3 0 0 5)) (P (V3 0 0 0)) (V3 0 1 0) (27 * pi / 180) 1,
+    _camera = cam (pi/4),
     _background = 0, -- black
     _lights = [PointLight (P (V3 8 0 8)) 10],
-    _visibles = [Object (Sphere (P (V3 0 0 0)) 1) 1]
+    _visibles = [Object (SSphere (Sphere (P (V3 0 0 0)) 1)) 1]
     }

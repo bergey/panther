@@ -57,3 +57,20 @@ executable ray-test
                      , panther == 0.1
   hs-source-dirs: src
   default-language: Haskell2010
+
+test-suite UnitTests
+  type:           exitcode-stdio-1.0
+  main-is:        UnitTests.hs
+  ghc-options:    -Wall -Werror -threaded
+  hs-source-dirs: tests
+  build-depends:
+    base,
+    binary,
+    bytestring,
+    tasty,
+    tasty-quickcheck,
+    QuickCheck,
+    lens,
+    linear,
+    panther
+  default-language: Haskell2010

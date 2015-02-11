@@ -42,9 +42,15 @@ data Ray = Ray !P3D !V3D !Spectrum deriving Show
 -- (if tracing from lamp to eye) or the accumulated absorption (if
 -- tracing from eye to lamp).
 
-data Shape = Sphere !P3D !Double
-    | Plane !V3D !Double
-             deriving Show
+data Sphere = Sphere !P3D !Double
+            deriving Show
+
+data Plane = Plane !V3D !Double
+           deriving Show
+
+data Shape = SSphere Sphere
+           | SPlane Plane
+           deriving Show
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
 type Material = V3D -- ^ diffuse Reflectance

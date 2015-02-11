@@ -87,4 +87,5 @@ radiance ray@(Ray _ _ s) = do
      Nothing -> view $ scene . background
      Just isect -> (s * ) <$> integrator n ray isect
 
--- r2f :: Spectrum -> PixelF -- Double -> Float
+p3 :: a -> a -> a -> Point V3 a
+p3 x y z = P (V3 x y z)
