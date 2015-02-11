@@ -80,7 +80,7 @@ unshadowed p Nothing l = lightSpectrum p l
 
 lightDirection :: P3D -> Light -> V3D
 lightDirection u (PointLight v _) = v .-. u
-lightDirection _ (ParallelLight v _) = v
+lightDirection _ (ParallelLight v _) = -v
 
 -- | light spectrum reduced by distance.  This does not account for
 -- intervening objects or participating media.
@@ -96,7 +96,7 @@ oneRandomLightIntegrator n r i@(Intersection _ _ m) = do
     allLights <- view $ scene . lights
     lightSamples <- choose allLights n
     li <- traverse (directLightContribution q) lightSamples
-    return $ m * genericLength allLights * sum li
+    return $ m * genericLength allLights * sum li ^/ r2f n
 
 -- TODO use distributions from statistics pkg here?
 -- | @choose as n@ picks n random samples from as (uniformly distributed)
