@@ -55,7 +55,8 @@ cam θ = Camera (p3 (5 * cos θ) (5 * sin θ) 0) 0 (V3 0 0 1) (27 * pi / 180) 1
 testScene = Scene {
     _camera = cam (pi/4),
     _background = 0, -- black
-    _lights = [PointLight (P (V3 8 0 8)) 40],
+    _lights = [PointLight (P (V3 8 0 8)) 40
+              , PointLight (p3 0 0 (-8)) (V3 40 0 0) ],
     -- _lights = [ParallelLight (V3 0 0 (-1)) 100],
     _visibles = [Object (SSphere (Sphere 0 1)) 1]
     }

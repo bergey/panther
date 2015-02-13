@@ -41,8 +41,9 @@ overSamples :: (a -> M b) ->
                Array (V2 Int) [ImgSample a] -> M (Array (V2 Int) [ImgSample b])
 overSamples = traverse . traverse . traverse
 
+-- | A list of pixel coordinates for the given resolution.
 enumCoords :: V2 Int -> [V2 Int]
-enumCoords (V2 xres yres) = [V2 x y | x <- [0..xres-1], y <- [0..yres-1]]
+enumCoords = traverse (\r -> [0..r-1])
 
 enumPixelCoords :: M [V2 Int]
 enumPixelCoords = enumCoords <$> view (algorithms . resolution)
@@ -56,7 +57,7 @@ globalRay :: M44 Double -> V2 Double -> P3D
 globalRay m u = P $ normalizePoint $ m !* camRay u
 
 camRay :: V2 Double -> V4 Double
-camRay (V2 x y) = V4 x y (-1) 1
+camRay (V2 x y) = V4 x (-y) (-1) 1
 
 getCameraRays :: M (Array (V2 Int) [ImgSample Ray])
 getCameraRays = do
