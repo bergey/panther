@@ -21,7 +21,7 @@ bit8 :: Float -> Word8
 bit8 px = round (255 * clamp px)
 
 bit16 :: Float -> Word16
-bit16 px = round (65536 * px)
+bit16 px = round (65535 * px)
 
 to8Bit :: Image PixelF -> Image Pixel8
 to8Bit = pixelMap bit8
