@@ -4,6 +4,7 @@ module Ray.Algorithms where
 
 import Ray.Types
 import Ray.Shapes
+import Ray.Util
 
 import Linear
 import Linear.Affine
@@ -53,25 +54,25 @@ boxFilter = fmap $ mean . fmap _sampleValue
 -- | @ambientintegrator@ ignores light sources, and returns the
 -- color of the surface directly.
 ambientIntegrator :: SurfaceIntegrator
-ambientIntegrator _n _ (Intersection _ _ b) = return $ b
+ambientIntegrator _n _ ix = return $ ix ^. material
 
 -- | @directLightIntegrator@ measures direct lighting, ignoring any
 -- paths with multiple bounces.  It ignores the number of samples
 -- parameter.
 directLightIntegrator :: SurfaceIntegrator
-directLightIntegrator n r@(Ray p u _s) i@(Intersection ds _n m) = do
-    let q = intersectionPt r i
+directLightIntegrator n ray ix = do
+    let q = intersectionPt ray ix
     ls <- view $ scene . lights
-    li <- traverse (directLightContribution q) ls
-    return $ m * sum li
+    li <- traverse (directLightContribution q (ix ^. tEpsilon)) ls
+    return $ ix ^. material * sum li
 
 intersectionPt :: Ray -> Intersection a -> P3D
-intersectionPt (Ray p u _) (Intersection ds _ _) = p .+^ u ^* sqrt ds
+intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
 
-directLightContribution :: P3D -> Light -> M Spectrum
-directLightContribution q l = do
+directLightContribution :: P3D -> Double -> Light -> M Spectrum
+directLightContribution q ε l = do
     os <- view $ scene . visibles
-    let ray = Ray q (lightDirection q l) 1
+    let ray = Ray q (lightDirection q l) ε posInfinity 1
     return $ unshadowed q (intersect os ray) l
 
 unshadowed :: P3D -> Maybe (Intersection Spectrum) -> Light -> Spectrum
@@ -91,12 +92,12 @@ lightSpectrum _ (ParallelLight _ s) = s
 -- | @oneRandomlightintegrator@ picks a light at random for each sample, and
 -- calculates the direct contribution from that light.
 oneRandomLightIntegrator :: SurfaceIntegrator
-oneRandomLightIntegrator n r i@(Intersection _ _ m) = do
-    let q = intersectionPt r i
+oneRandomLightIntegrator n ray ix = do
+    let q = intersectionPt ray ix
     allLights <- view $ scene . lights
     lightSamples <- choose allLights n
-    li <- traverse (directLightContribution q) lightSamples
-    return $ m * genericLength allLights * sum li ^/ r2f n
+    li <- traverse (directLightContribution q (ix ^. tEpsilon)) lightSamples
+    return $ (ix ^. material) * genericLength allLights * sum li ^/ r2f n
 
 -- TODO use distributions from statistics pkg here?
 -- | @choose as n@ picks n random samples from as (uniformly distributed)

@@ -20,7 +20,7 @@ import Codec.Picture.Jpg (encodeJpeg)
 import Data.Word
 import           Control.Lens
 import           Data.Distributive
-import           Data.List
+-- import           Data.List ()
 import           Data.Ord
 import           Data.Maybe
 import           Control.Monad.ST
@@ -29,8 +29,9 @@ import Control.Applicative
 
 main :: IO ()
 main = do
-    img <- render (naiveRenderer (V2 640 480)
-                   & surfaceIntegrator .~ oneRandomLightIntegrator)
+    img <- render (naiveRenderer (V2 640 480))
+                  -- & surfaceIntegrator .~ oneRandomLightIntegrator )
+           -- & surfaceIntegrator .~ ambientIntegrator )
            testScene
     writePng "raytracer-test.png" $ pixelMap asRGB16 img
 
@@ -54,6 +55,7 @@ cam θ = Camera (p3 (5 * cos θ) (5 * sin θ) 0) 0 (V3 0 0 1) (27 * pi / 180) 1
 testScene = Scene {
     _camera = cam (pi/4),
     _background = 0, -- black
-    _lights = [PointLight (P (V3 8 0 8)) 10],
-    _visibles = [Object (SSphere (Sphere (P (V3 0 0 0)) 1)) 1]
+    _lights = [PointLight (P (V3 8 0 8)) 40],
+    -- _lights = [ParallelLight (V3 0 0 (-1)) 100],
+    _visibles = [Object (SSphere (Sphere 0 1)) 1]
     }

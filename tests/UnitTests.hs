@@ -26,10 +26,10 @@ tests = testGroup "Panther Tests" [
     testGroup "sphere" [
          testProperty "intersect sphere at origin with radius 1" $
          \dir -> dir /= 0 ==>
-                 intersect (Sphere 0 1) (Ray 0 (normalize dir) 0) ^?! _Just . distanceSq =~ 1,
+                 intersect (Sphere 0 1) (mkRay 0 (normalize dir) 0) ^?! _Just . tHit =~ 1,
          testProperty "sphere has fixed r" $
          \(s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
-                                   intersect s (Ray c (normalize dir) 0) ^?! _Just . distanceSq =~ r * r
+                                   intersect s (mkRay c (normalize dir) 0) ^?! _Just . tHit =~ r
          ],
     testGroup "plane" [
         testProperty "all rays intersect a plane" $
@@ -50,7 +50,7 @@ instance (Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a) where
     arbitrary = P <$> arbitrary
 
 instance Arbitrary Ray where
-    arbitrary = Ray <$> arbitrary <*> (getNonZero <$> arbitrary) <*> arbitrary
+    arbitrary = mkRay <$> arbitrary <*> (getNonZero <$> arbitrary) <*> arbitrary
 
 instance Arbitrary Sphere where
     arbitrary = Sphere <$> arbitrary <*> arbitrary

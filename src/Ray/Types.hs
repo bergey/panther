@@ -7,6 +7,8 @@
 
 module Ray.Types where
 
+import Ray.Util
+
 import           Linear
 import           Linear.Affine
 import           Linear.Projection
@@ -35,7 +37,17 @@ type Spectrum = V3D
 
 -- | A ray is represented as a starting point and a vector.  The
 -- vector need not be normalized.
-data Ray = Ray !P3D !V3D !Spectrum deriving Show
+data Ray = Ray {
+    _rayOrigin :: !P3D,
+    _rayDir :: !V3D,
+    _mint :: !Double,
+    _maxt :: !Double,
+    _raySpectrum :: !Spectrum
+    } deriving Show
+
+-- | A ray of infinite extent, with 'mint' = 0.
+mkRay :: P3D -> V3D -> Spectrum -> Ray
+mkRay p u s = Ray p u 0 posInfinity s
 
 -- XXX Will this be true?
 -- A Ray carries an arbitrary tag, typically representing the light
@@ -58,10 +70,10 @@ type Material = V3D -- ^ diffuse Reflectance
 data Object = Object !Shape !Material deriving Show
 
 -- | Normal & material are not strict fields, since they may not be
--- used.  @Intersection@ stores the squared distance, as it is often
--- less expensive to calculate, and often the distance is not needed.
+-- used.
 data Intersection a = Intersection {
-    _distanceSq :: !Double,
+    _tHit :: !Double,
+    _tEpsilon :: !Double,
     _normal :: Dir,
     _material :: a
     } deriving (Functor)
@@ -147,3 +159,4 @@ makeLenses ''MRead
 makeLenses ''Scene
 makeLenses ''ImgSample
 makeLenses ''Intersection
+makeLenses ''Ray

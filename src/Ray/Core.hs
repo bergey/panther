@@ -9,6 +9,7 @@ import Ray.Camera
 import Ray.Image
 import Ray.Shapes
 import Ray.Algorithms
+import Ray.Util
 
 import Codec.Picture
 import Linear
@@ -48,7 +49,7 @@ enumPixelCoords = enumCoords <$> view (algorithms . resolution)
 
 mkImgSample :: P3D -> V2 Double -> M44 Double -> V2 Double -> ImgSample Ray
 mkImgSample o invRes m xy =
-    ImgSample xy $ Ray o (globalRay m (normCoords xy) .-. o) 1
+    ImgSample xy $ Ray o (globalRay m (normCoords xy) .-. o) 0 posInfinity 1
     where normCoords u = 2 * invRes * u - 1
 
 globalRay :: M44 Double -> V2 Double -> P3D
@@ -79,13 +80,13 @@ getIntersection :: Ray -> M (Maybe (Intersection Spectrum))
 getIntersection r = intersect <$> view scene <*> pure r
 
 radiance :: Ray -> M Spectrum
-radiance ray@(Ray _ _ s) = do
+radiance ray = do
     x <- getIntersection ray
     n <- view $ algorithms . samplesPerCameraRay
     integrator <- view $ algorithms . surfaceIntegrator
     case x of
      Nothing -> view $ scene . background
-     Just isect -> (s * ) <$> integrator n ray isect
+     Just isect -> (ray ^. raySpectrum * ) <$> integrator n ray isect
 
 p3 :: a -> a -> a -> Point V3 a
 p3 x y z = P (V3 x y z)

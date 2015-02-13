@@ -25,6 +25,7 @@ library
                 , Ray.Materials
                 , Ray.Shapes
                 , Ray.Types
+                , Ray.Util
                 , Solve
   -- other-modules:       
   -- other-extensions:    
