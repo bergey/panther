@@ -49,7 +49,7 @@ enumPixelCoords = enumCoords <$> view (algorithms . resolution)
 
 mkImgSample :: P3D -> V2 Double -> M44 Double -> V2 Double -> ImgSample Ray
 mkImgSample o invRes m xy =
-    ImgSample xy $ Ray o (globalRay m (normCoords xy) .-. o) 0 posInfinity 1
+    ImgSample xy $ mkRay o (globalRay m (normCoords xy) .-. o) 1
     where normCoords u = 2 * invRes * u - 1
 
 globalRay :: M44 Double -> V2 Double -> P3D

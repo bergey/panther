@@ -9,6 +9,7 @@ import Solve
 
 import Linear
 import Linear.Affine
+import Numeric.Interval (Interval, elem)
 
 import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, filter, Num(..), (.), (/), const)
 -- import Control.Monad.Identity
@@ -17,8 +18,8 @@ import Data.Maybe
 import Data.Array
 import Data.Traversable
 import Data.Distributive
-import Data.Ord
-import Data.Foldable
+import Data.Ord (comparing)
+import Data.Foldable hiding (elem)
 import Control.Applicative
 import Control.Lens
 import Data.Bool
@@ -33,7 +34,7 @@ instance Intersectable Object where
                                        & _Just . material .~ mat
 
 onRaySegment :: Ray -> Double -> Bool
-onRaySegment ray d = d > (ray ^. mint) && d < (ray ^. maxt)
+onRaySegment ray d = elem d (ray ^. rayt)
 
 -- | A multiplier of 'intersection' tHit' to calculate ''tEpsilon'
 -- PBRT v2 p. 123 suggests the value as effective in practice
@@ -59,9 +60,11 @@ instance Intersectable Sphere where
 
 instance Intersectable Plane where
     type IntersectionData Plane = ()
-    intersect (Plane normal pDist) ray =
-        let t = (- (dot (ray ^. rayOrigin . _Point) normal + pDist / dot (ray ^. rayDir) normal)) in
-        if t > ray ^. mint then
+    intersect (Plane normal d) ray =
+        let
+            p = ray ^. rayOrigin . _Point
+            t = (d - dot p normal)  / dot (ray ^. rayDir) normal
+        in if onRaySegment ray t then
             Just $ Intersection {
                 _tHit = t,
                 _tEpsilon = epsilonFactor * t,

@@ -13,6 +13,7 @@ import           Linear
 import           Linear.Affine
 import           Linear.Projection
 import System.Random.MWC
+import Numeric.Interval (Interval, (...))
 
 import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, Show)
 import Control.Lens.TH
@@ -40,14 +41,13 @@ type Spectrum = V3D
 data Ray = Ray {
     _rayOrigin :: !P3D,
     _rayDir :: !V3D,
-    _mint :: !Double,
-    _maxt :: !Double,
+    _rayt :: !(Interval Double),
     _raySpectrum :: !Spectrum
     } deriving Show
 
--- | A ray of infinite extent, with 'mint' = 0.
+-- | A ray defined for t ∈ 0...∞.
 mkRay :: P3D -> V3D -> Spectrum -> Ray
-mkRay p u s = Ray p u 0 posInfinity s
+mkRay p u s = Ray p u nonNegative s
 
 -- XXX Will this be true?
 -- A Ray carries an arbitrary tag, typically representing the light

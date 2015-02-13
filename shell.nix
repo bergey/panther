@@ -6,6 +6,7 @@ let
           hsPkg = pkg: version: self.callPackage "/home/bergey/code/nixHaskellVersioned/${pkg}/${version}.nix" {};
           # required, not in Nix
           # version pins
+          intervals = hsPkg "intervals" "0.7.1";
           # HEAD packages
           # self
           thisPackage = self.callPackage ./. {};

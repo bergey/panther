@@ -9,9 +9,10 @@ import Ray.Util
 import Linear
 import Linear.Affine
 import System.Random.MWC
+import Numeric.Interval (Interval, (...))
 
 import Control.Applicative
-import Control.Lens
+import Control.Lens hiding ((...))
 import Data.Maybe
 import Data.List (genericLength)
 import Control.Monad
@@ -72,7 +73,7 @@ intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
 directLightContribution :: P3D -> Double -> Light -> M Spectrum
 directLightContribution q ε l = do
     os <- view $ scene . visibles
-    let ray = Ray q (lightDirection q l) ε posInfinity 1
+    let ray = Ray q (lightDirection q l) (ε...posInfinity) 1
     return $ unshadowed q (intersect os ray) l
 
 unshadowed :: P3D -> Maybe (Intersection Spectrum) -> Light -> Spectrum

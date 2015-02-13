@@ -33,20 +33,25 @@ tests = testGroup "Panther Tests" [
          ],
     testGroup "plane" [
         testProperty "all rays intersect a plane" $
-        \(plane, ray) -> isJust $ intersect (plane :: Plane) ray
+        \(plane, ray) -> isJust (intersect (plane :: Plane) ray)
+                          || isJust (intersect plane $ ray & rayDir *~ -1)
                       ]
     ]
 
-instance Arbitrary a => Arbitrary (V2 a) where
+nonZero :: (Num a, Ord a, Arbitrary a) => Gen a
+nonZero = getNonZero <$> arbitrary
+
+instance (Num a, Ord a, Arbitrary a) => Arbitrary (V2 a) where
     arbitrary = V2 <$> arbitrary <*> arbitrary
 
-instance Arbitrary a => Arbitrary (V3 a) where
-    arbitrary = V3 <$> arbitrary <*> arbitrary <*> arbitrary
+instance (Num a, Ord a, Arbitrary a) => Arbitrary (V3 a) where
+    arbitrary = V3 <$> nonZero <*> nonZero <*> nonZero
 
-instance Arbitrary a => Arbitrary (V4 a) where
+instance (Num a, Ord a, Arbitrary a) => Arbitrary (V4 a) where
     arbitrary = V4 <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
-instance (Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a) where
+instance (Num a, Ord a, Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a)
+                                                                                where
     arbitrary = P <$> arbitrary
 
 instance Arbitrary Ray where
