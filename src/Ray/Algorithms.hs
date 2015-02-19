@@ -61,25 +61,47 @@ ambientIntegrator _n _ ix = return $ ix ^. material
 -- paths with multiple bounces.  It ignores the number of samples
 -- parameter.
 directLightIntegrator :: SurfaceIntegrator
-directLightIntegrator n ray ix = do
-    let q = intersectionPt ray ix
+directLightIntegrator _n ray ix = do
     ls <- view $ scene . lights
-    li <- traverse (directLightContribution q (ix ^. tEpsilon)) ls
-    return $ ix ^. material * sum li
+    os <- view $ scene . visibles
+    return . sum $ directLightContribution os ray ix <$> ls
+
+-- | @oneRandomlightintegrator@ picks a light at random for each sample, and
+-- calculates the direct contribution from that light.
+oneRandomLightIntegrator :: SurfaceIntegrator
+oneRandomLightIntegrator n ray ix = do
+    allLights <- view $ scene . lights
+    lightSamples <- choose allLights n
+    os <- view $ scene . visibles
+    let weight = genericLength allLights / r2f n
+    return . (* weight) . sum $ directLightContribution os ray ix <$> lightSamples
+
+-- | @directLightContribution ls os ray ix@ calculates the light
+-- reaching @ix@ directly from the light l, accounting for
+-- shading by @os@.
+directLightContribution :: [Object] -> Ray -> Intersection Spectrum -> Light ->
+                          Spectrum
+directLightContribution os ray ix l = reflectance * incoming
+  where
+    reflectance = ix ^. material
+    incoming = directLightArriving os q (ix ^. tEpsilon) l
+    q = intersectionPt ray ix
 
 intersectionPt :: Ray -> Intersection a -> P3D
 intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
 
-directLightContribution :: P3D -> Double -> Light -> M Spectrum
-directLightContribution q ε l = do
-    os <- view $ scene . visibles
-    let ray = Ray q (lightDirection q l) (ε...posInfinity) 1
-    return $ unshadowed q (intersect os ray) l
+-- | @directLightArriving os q ε l@ calculates the light reaching
+-- point q from light l, accounting for possible shading from the
+-- objects os and for the distance to the light.  @ε@ is the
+-- uncertainty in the position @q@, used to avoid false
+-- self-intersections.
+directLightArriving :: [Object] -> P3D -> Double -> Light -> Spectrum
+directLightArriving os q ε l = maybe s (const 0) (intersect os ray) where
+  ray = Ray q (lightDirection q l) (ε...posInfinity) 1
+  s = lightSpectrum q l
 
-unshadowed :: P3D -> Maybe (Intersection Spectrum) -> Light -> Spectrum
-unshadowed _ (Just _) _ = 0
-unshadowed p Nothing l = lightSpectrum p l
-
+-- | The direction from the given point towards the given light.  For
+-- Point & Parallel lights, this is a single direction.
 lightDirection :: P3D -> Light -> V3D
 lightDirection u (PointLight v _) = v .-. u
 lightDirection _ (ParallelLight v _) = -v
@@ -89,16 +111,6 @@ lightDirection _ (ParallelLight v _) = -v
 lightSpectrum :: P3D -> Light -> Spectrum
 lightSpectrum u (PointLight v s) = s ^/ qd v u
 lightSpectrum _ (ParallelLight _ s) = s
-
--- | @oneRandomlightintegrator@ picks a light at random for each sample, and
--- calculates the direct contribution from that light.
-oneRandomLightIntegrator :: SurfaceIntegrator
-oneRandomLightIntegrator n ray ix = do
-    let q = intersectionPt ray ix
-    allLights <- view $ scene . lights
-    lightSamples <- choose allLights n
-    li <- traverse (directLightContribution q (ix ^. tEpsilon)) lightSamples
-    return $ (ix ^. material) * genericLength allLights * sum li ^/ r2f n
 
 -- TODO use distributions from statistics pkg here?
 -- | @choose as n@ picks n random samples from as (uniformly distributed)
