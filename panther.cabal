@@ -42,6 +42,8 @@ library
               -- , semigroups >= 0.15.2 && < 0.17
               , array >= 0.5 && < 0.6
               , distributive >= 0.4 && < 0.5
+              , semigroupoids >= 4.0 && < 4.4
+              , semigroups >= 0.15.2 && < 0.17
   hs-source-dirs:      src
   default-language:    Haskell2010
 
@@ -60,6 +62,8 @@ executable ray-test
                      , array >= 0.5 && < 0.6
                      , distributive >= 0.4 && < 0.5
                      , panther == 0.1
+                     , semigroupoids >= 4.0 && < 4.4
+                     , semigroups >= 0.15.2 && < 0.17
   hs-source-dirs: src
   default-language: Haskell2010
 

@@ -31,7 +31,12 @@ type V3D = V3 Double
 type P3D = Point V3 Double
 type Dir = V3D
 
+-- | A linear RGB space, assumed to use the BT.709 primaries
+-- (equivalent to sRGB, but linear.)
 type Spectrum = V3D
+
+-- | By convention, components of RGB should be in [0,1].
+type RGB = V3D
 
 -- TODO is it easier to require normalized direction vector?
 -- Certainly it doesn't change the denotation of the type.
@@ -108,7 +113,8 @@ data Algo = Algo {
     _imageSampler :: ImageSampler,
     _discreteSampler :: DiscreteSampler,
     _surfaceIntegrator :: SurfaceIntegrator,
-    _imageReconstructor :: ImageReconstructor
+    _imageReconstructor :: ImageReconstructor,
+    _toneMapping :: ToneMapping
     }
 
 data MRead = MRead {
@@ -154,6 +160,12 @@ type Array2D = Array (V2 Int)
 type ImageReconstructor =
     Array2D [ImgSample Spectrum] -> Array2D Spectrum
     -- V2 Int -> [ImageSample Spectrum] -> Spectrum
+
+-- | A ToneMapping maps the luminance of an image from [0,∞) to [0,1].
+-- It may be non-linear to compensate for the logorithmic perception
+-- of the eye.
+type ToneMapping =
+    Array2D Spectrum -> Array2D V3D
 
 makeLenses ''Algo
 makeLenses ''Camera

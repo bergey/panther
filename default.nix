@@ -1,6 +1,6 @@
 { mkDerivation, array, base, binary, bytestring, distributive
 , intervals, JuicyPixels, lens, linear, mtl, mwc-random, QuickCheck
-, stdenv, tasty, tasty-quickcheck
+, semigroupoids, semigroups, stdenv, tasty, tasty-quickcheck
 }:
 mkDerivation {
   pname = "panther";
@@ -10,10 +10,10 @@ mkDerivation {
   isExecutable = true;
   buildDepends = [
     array base bytestring distributive intervals JuicyPixels lens
-    linear mtl mwc-random
+    linear mtl mwc-random semigroupoids semigroups
   ];
   testDepends = [
-    base binary bytestring lens linear QuickCheck tasty
+    base binary bytestring intervals lens linear QuickCheck tasty
     tasty-quickcheck
   ];
   license = stdenv.lib.licenses.bsd3;

@@ -6,10 +6,14 @@ import Ray.Types
 import Ray.Shapes
 import Ray.Util
 
+import Prelude (Num(..), Floating(..), Fractional(..), Double, ($), (.), const,
+                (!!), length, Int, Integer)
+import Data.Foldable
 import Linear
 import Linear.Affine
 import System.Random.MWC
 import Numeric.Interval (Interval, (...))
+import Data.Array
 
 import Control.Applicative
 import Control.Lens hiding ((...))
@@ -17,6 +21,8 @@ import Data.Maybe
 import Data.List (genericLength)
 import Control.Monad
 import Control.Monad.Reader
+import Data.Semigroup
+import Data.Semigroup.Foldable
 
 -- import qualified System.Random.MWC as R
 
@@ -27,7 +33,8 @@ naiveRenderer res = Algo {
     _imageSampler = onGridSampler,
     _discreteSampler = uniformDiscreteSampler,
     _surfaceIntegrator = directLightIntegrator,
-    _imageReconstructor = boxFilter
+    _imageReconstructor = boxFilter,
+    _toneMapping = uniformLinearTone
     }
 
 halfPixel :: V2 Double
@@ -126,3 +133,28 @@ uniformDiscreteSampler :: DiscreteSampler
 uniformDiscreteSampler r n = replicateM n $ do
     g <- view gen
     liftIO $ uniformR (0,r-1) g
+
+luminance :: Spectrum -> Double
+luminance = dot (V3 0.212671 0.715160 0.072169)
+
+data Mean a = Mean Integer a
+
+getMean :: Fractional a => Mean a -> a
+getMean (Mean ct a) = a / r2f ct
+
+mkMean :: a -> Mean a
+mkMean = Mean 1
+
+instance Num a => Semigroup (Mean a) where
+    Mean ctA a <> Mean ctB b = Mean (ctA+ctB) (a+b)
+
+instance Ix i => Foldable1 (Array i)
+
+-- | A uniform linear tone mapping due to Greg Ward.  As described in
+-- Glassner 1995, p.1063.
+uniformLinearTone :: ToneMapping
+uniformLinearTone picture = fmap (* pure m) picture where
+  pictureL :: Double
+  pictureL = exp . getMean $ foldMap1 (mkMean . log . luminance) picture
+  displayMaxL = 100
+  m = ( (1.219 + (displayMaxL / 2)**0.4) / (1.219 + pictureL**0.4) )**2.5 / displayMaxL

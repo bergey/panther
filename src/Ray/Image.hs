@@ -12,16 +12,17 @@ import Data.Array
 import Data.Word
 import qualified Data.ByteString.Lazy as BS
 
-clamp :: Float -> Float
+-- clamp :: Double -> Double
+clamp :: (Num a, Ord a) => a -> a
 clamp x | x > 1 = 1
 clamp x | x < 0 = 0
 clamp x = x
 
 bit8 :: Float -> Word8
-bit8 px = round (255 * clamp px)
+bit8 px = round (255 * px)
 
 bit16 :: Float -> Word16
-bit16 px = round (65535 * clamp px)
+bit16 px = round (65535 * px)
 
 to8Bit :: Image PixelF -> Image Pixel8
 to8Bit = pixelMap bit8
@@ -35,9 +36,15 @@ toJpg = convertImage . (promoteImage :: Image Pixel8 -> Image PixelRGB8) . to8Bi
 -- saveJpeg :: FilePath -> Image PixelF -> IO ()
 -- saveJpeg fp img = BS.writeFile fp . encodeJpeg . toJpg $ img
 
-asImg :: V2 Int -> Array2D Spectrum -> Image PixelRGBF
+-- TODO add other options for handling gamut
+-- | Take colors with luminance in [0,1] and adjust to the non-linear
+-- sRGB space, clamping if they are out of gamut.
+toSRGB :: V3D -> RGB
+toSRGB = fmap clamp
+
+asImg :: V2 Int -> Array2D RGB -> Image PixelRGBF
 asImg (V2 xres yres) arr = generateImage lookup xres yres where
-  lookup x y = asRGB $ arr ! V2 x y
+  lookup x y = asRGB . toSRGB $ arr ! V2 x y
 
 asRGB :: V3D -> PixelRGBF
 asRGB (V3 r g b) = PixelRGBF (r2f  r) (r2f g) (r2f b)

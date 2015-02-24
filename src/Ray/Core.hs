@@ -27,7 +27,11 @@ renderArray :: Algo -> Scene -> IO (Array2D Spectrum)
 renderArray = runM getSpectralArray
 
 getImg :: M (Image PixelRGBF)
-getImg = asImg <$> view (algorithms . resolution) <*> getSpectralArray
+getImg = do
+    res <- view $ algorithms . resolution
+    tm <- view $ algorithms . toneMapping
+    spectrum <- getSpectralArray
+    return $ asImg res $ tm spectrum
 
 getSpectralArray :: M (Array2D Spectrum)
 getSpectralArray = do
