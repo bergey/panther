@@ -83,8 +83,8 @@ data Intersection a = Intersection {
     _material :: a
     } deriving (Functor)
 
-data Light = PointLight !P3D !Spectrum
-           | ParallelLight !V3D !Spectrum
+data Lamp = PointLamp !P3D !Spectrum
+           | ParallelLamp !V3D !Spectrum
            deriving Show
 
 -- | follows Haines's NFF: http://tog.acm.org/resources/SPD/NFF.TXT
@@ -99,7 +99,7 @@ data Camera = Camera {
 data Scene = Scene {
     _camera :: Camera,
     _background :: Spectrum,
-    _lights :: [Light],
+    _lamps :: [Lamp],
     _visibles :: [Object]
     } deriving Show
 

@@ -69,7 +69,7 @@ ambientIntegrator _n _ ix = return $ ix ^. material
 -- parameter.
 directLightIntegrator :: SurfaceIntegrator
 directLightIntegrator _n ray ix = do
-    ls <- view $ scene . lights
+    ls <- view $ scene . lamps
     os <- view $ scene . visibles
     return . sum $ directLightContribution os ray ix <$> ls
 
@@ -77,16 +77,16 @@ directLightIntegrator _n ray ix = do
 -- calculates the direct contribution from that light.
 oneRandomLightIntegrator :: SurfaceIntegrator
 oneRandomLightIntegrator n ray ix = do
-    allLights <- view $ scene . lights
-    lightSamples <- choose allLights n
+    allLamps <- view $ scene . lamps
+    lampSamples <- choose allLamps n
     os <- view $ scene . visibles
-    let weight = genericLength allLights / r2f n
-    return . (* weight) . sum $ directLightContribution os ray ix <$> lightSamples
+    let weight = genericLength allLamps / r2f n
+    return . (* weight) . sum $ directLightContribution os ray ix <$> lampSamples
 
 -- | @directLightContribution ls os ray ix@ calculates the light
 -- reaching @ix@ directly from the light l, accounting for
 -- shading by @os@.
-directLightContribution :: [Object] -> Ray -> Intersection Spectrum -> Light ->
+directLightContribution :: [Object] -> Ray -> Intersection Spectrum -> Lamp ->
                           Spectrum
 directLightContribution os ray ix l = reflectance * incoming
   where
@@ -102,22 +102,22 @@ intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
 -- objects os and for the distance to the light.  @ε@ is the
 -- uncertainty in the position @q@, used to avoid false
 -- self-intersections.
-directLightArriving :: [Object] -> P3D -> Double -> Light -> Spectrum
+directLightArriving :: [Object] -> P3D -> Double -> Lamp -> Spectrum
 directLightArriving os q ε l = maybe s (const 0) (intersect os ray) where
-  ray = Ray q (lightDirection q l) (ε...posInfinity) 1
-  s = lightSpectrum q l
+  ray = Ray q (lampDirection q l) (ε...posInfinity) 1
+  s = lampSpectrum q l
 
--- | The direction from the given point towards the given light.  For
--- Point & Parallel lights, this is a single direction.
-lightDirection :: P3D -> Light -> V3D
-lightDirection u (PointLight v _) = v .-. u
-lightDirection _ (ParallelLight v _) = -v
+-- | The direction from the given point towards the given lamp.  For
+-- Point & Parallel lamps, this is a single direction.
+lampDirection :: P3D -> Lamp -> V3D
+lampDirection u (PointLamp v _) = v .-. u
+lampDirection _ (ParallelLamp v _) = -v
 
--- | light spectrum reduced by distance.  This does not account for
+-- | Lamp spectrum reduced by distance.  This does not account for
 -- intervening objects or participating media.
-lightSpectrum :: P3D -> Light -> Spectrum
-lightSpectrum u (PointLight v s) = s ^/ qd v u
-lightSpectrum _ (ParallelLight _ s) = s
+lampSpectrum :: P3D -> Lamp -> Spectrum
+lampSpectrum u (PointLamp v s) = s ^/ qd v u
+lampSpectrum _ (ParallelLamp _ s) = s
 
 -- TODO use distributions from statistics pkg here?
 -- | @choose as n@ picks n random samples from as (uniformly distributed)
