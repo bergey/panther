@@ -149,8 +149,10 @@ data  ImgSample a = ImgSample {
     _sampleValue :: !a
     } deriving (Functor, Foldable, Traversable, Show)
 
+type Array2D = Array (V2 Int)
+
 type ImageReconstructor =
-    Array (V2 Int) [ImgSample Spectrum] -> Array (V2 Int) Spectrum
+    Array2D [ImgSample Spectrum] -> Array2D Spectrum
     -- V2 Int -> [ImageSample Spectrum] -> Spectrum
 
 makeLenses ''Algo

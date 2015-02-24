@@ -23,22 +23,22 @@ import Control.Lens
 render :: Algo -> Scene -> IO (Image PixelRGBF)
 render = runM getImg
 
-renderArray :: Algo -> Scene -> IO (Array (V2 Int) Spectrum)
+renderArray :: Algo -> Scene -> IO (Array2D Spectrum)
 renderArray = runM getSpectralArray
 
 getImg :: M (Image PixelRGBF)
 getImg = asImg <$> view (algorithms . resolution) <*> getSpectralArray
 
-getSpectralArray :: M (Array (V2 Int) Spectrum)
+getSpectralArray :: M (Array2D Spectrum)
 getSpectralArray = do
     recon <- view $ algorithms . imageReconstructor
     recon <$> getSpectralSamples
 
-getSpectralSamples :: M (Array (V2 Int) [ImgSample Spectrum])
+getSpectralSamples :: M (Array2D [ImgSample Spectrum])
 getSpectralSamples = overSamples radiance =<< getCameraRays
 
 overSamples :: (a -> M b) ->
-               Array (V2 Int) [ImgSample a] -> M (Array (V2 Int) [ImgSample b])
+               Array2D [ImgSample a] -> M (Array2D [ImgSample b])
 overSamples = traverse . traverse . traverse
 
 -- | A list of pixel coordinates for the given resolution.
@@ -59,7 +59,7 @@ globalRay m u = P $ normalizePoint $ m !* camRay u
 camRay :: V2 Double -> V4 Double
 camRay (V2 x y) = V4 x (-y) (-1) 1
 
-getCameraRays :: M (Array (V2 Int) [ImgSample Ray])
+getCameraRays :: M (Array2D [ImgSample Ray])
 getCameraRays = do
     m <- getInverseCamMatrix
     ss <- getSampleLocs
@@ -68,7 +68,7 @@ getCameraRays = do
     let invRes = 1 / (r2f <$> res)
     return $ (fmap . fmap) (mkImgSample o invRes m) ss
 
-getSampleLocs :: M (Array (V2 Int) [V2 Double])
+getSampleLocs :: M (Array2D [V2 Double])
 getSampleLocs = do
     sampler <- view $ algorithms . imageSampler
     n <- view $ algorithms . samplesPerPixel

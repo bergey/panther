@@ -17,5 +17,5 @@ renderImage = do
     let px x y = r2f $ img ! (V2 x y)
     return $ generateImage
 
-renderArray :: M (Array (V2 Int) Spectrum)
+renderArray :: M (Array2D Spectrum)
 renderArray = do

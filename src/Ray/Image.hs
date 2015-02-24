@@ -35,7 +35,7 @@ toJpg = convertImage . (promoteImage :: Image Pixel8 -> Image PixelRGB8) . to8Bi
 -- saveJpeg :: FilePath -> Image PixelF -> IO ()
 -- saveJpeg fp img = BS.writeFile fp . encodeJpeg . toJpg $ img
 
-asImg :: V2 Int -> Array (V2 Int) Spectrum -> Image PixelRGBF
+asImg :: V2 Int -> Array2D Spectrum -> Image PixelRGBF
 asImg (V2 xres yres) arr = generateImage lookup xres yres where
   lookup x y = asRGB $ arr ! V2 x y
 
