@@ -103,7 +103,7 @@ intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
 -- uncertainty in the position @q@, used to avoid false
 -- self-intersections.
 directLightArriving :: [Object] -> P3D -> Double -> Lamp -> Spectrum
-directLightArriving os q ε l = maybe s (const 0) (intersect os ray) where
+directLightArriving os q ε l = option s (const 0) (intersect os ray) where
   ray = Ray q (lampDirection q l) (ε...posInfinity) 1
   s = lampSpectrum q l
 

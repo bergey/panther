@@ -19,6 +19,7 @@ import Data.Array
 import Control.Applicative
 import Data.Traversable
 import Control.Lens
+import Data.Semigroup
 
 render :: Algo -> Scene -> IO (Image PixelRGBF)
 render = runM getImg
@@ -81,7 +82,7 @@ getSampleLocs = do
     res <- view $ algorithms . resolution
     return $ array (0, res - 1) $ zip pxs ss
 
-getIntersection :: Ray -> M (Maybe (Intersection Spectrum))
+getIntersection :: Ray -> M (Option (Intersection Spectrum))
 getIntersection r = intersect <$> view scene <*> pure r
 
 radiance :: Ray -> M Spectrum
@@ -89,7 +90,7 @@ radiance ray = do
     x <- getIntersection ray
     n <- view $ algorithms . samplesPerCameraRay
     integrator <- view $ algorithms . surfaceIntegrator
-    case x of
+    case getOption x of
      Nothing -> view $ scene . background
      Just isect -> (ray ^. raySpectrum * ) <$> integrator n ray isect
 

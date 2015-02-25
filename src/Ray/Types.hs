@@ -26,6 +26,8 @@ import Data.Distributive
 import Data.Ord
 import Data.Foldable
 import Control.Applicative
+import Data.Vector (Vector(..))
+import Data.Semigroup
 
 type V3D = V3 Double
 type P3D = Point V3 Double
@@ -59,9 +61,20 @@ mkRay p u s = Ray p u nonNegative s
 -- (if tracing from lamp to eye) or the accumulated absorption (if
 -- tracing from eye to lamp).
 
+-- | Solid geometry, without any description of optical behavior.  In
+-- the case of Mesh, shading normals are included, as quasi-geometry.
+-- Mesh is the most important constructor here; Sphere and Plane are
+-- provided to help in debugging other parts of the system.
 data Shape = Sphere !P3D !Double
            | Plane !V3D !Double
+             -- points, vertex indices, normals, tangents, texture parameters
+           | Mesh !(Vector P3D) !(Vector (V3 Int)) (Maybe (Vector V3D)) (Maybe (Vector V3D)) (Maybe (Vector (V2 Double)))
            deriving Show
+
+-- | Construct a Mesh from vertex coordinates and indices, without any
+-- shading geometry.
+simpleMesh :: Vector P3D -> Vector (V3 Int) -> Shape
+simpleMesh ps vis = Mesh ps vis Nothing Nothing Nothing
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
 type Material = V3D -- ^ diffuse Reflectance
@@ -76,6 +89,10 @@ data Intersection a = Intersection {
     _normal :: Dir,
     _material :: a
     } deriving (Functor)
+
+-- The Semigroup instance picks the *closest* intersection
+instance Semigroup (Intersection a) where
+    a <> b = if _tHit a <= _tHit b then a else b
 
 data Lamp = PointLamp !P3D !Spectrum
            | ParallelLamp !V3D !Spectrum

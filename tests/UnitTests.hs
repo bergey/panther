@@ -18,6 +18,7 @@ import Linear.Affine
 import Control.Applicative
 import Control.Lens
 import Data.Maybe
+import Data.Semigroup
 
 main :: IO ()
 main = defaultMain tests
@@ -27,15 +28,15 @@ tests = testGroup "Panther Tests" [
     testGroup "sphere" [
          testProperty "intersect sphere at origin with radius 1" $
          \dir -> dir /= 0 ==>
-                 intersect (Sphere 0 1) (mkRay 0 (normalize dir) 0) ^?! _Just . tHit =~ 1,
+                 intersect (Sphere 0 1) (mkRay 0 (normalize dir) 0) ^?! _Wrapped . _Just . tHit =~ 1,
          testProperty "sphere has fixed r" $
          \(getSphere -> s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
-                                   intersect s (mkRay c (normalize dir) 0) ^?! _Just . tHit =~ r
+                                   intersect s (mkRay c (normalize dir) 0) ^?! _Wrapped . _Just . tHit =~ r
          ],
     testGroup "plane" [
         testProperty "all rays intersect a plane" $
-        \(getPlane -> plane, ray) -> isJust (intersect (plane) ray)
-                          || isJust (intersect plane $ ray & rayDir *~ -1)
+        \(getPlane -> plane, ray) -> isJust (getOption $ intersect (plane) ray)
+                          || isJust (getOption $ intersect plane $ ray & rayDir *~ -1)
                       ]
     ]
 
