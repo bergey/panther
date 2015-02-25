@@ -2,7 +2,6 @@ module Main where
 
 import           Ray.Core
 import           Ray.Image
-import           Ray.Materials
 import           Ray.Shapes
 import           Ray.Types
 import           Ray.Algorithms

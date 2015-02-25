@@ -5,7 +5,6 @@ module Ray
        , module Ray.Camera
        , module Ray.Core
        , module Ray.Image
-       , module Ray.Materials
        , module Ray.Shapes
        , module Ray.Types
        , module Solve
@@ -16,7 +15,6 @@ import Ray.Algorithms
 import Ray.Camera
 import Ray.Core
 import Ray.Image
-import Ray.Materials
 import Ray.Shapes
 import Ray.Types
 import Solve

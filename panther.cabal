@@ -22,7 +22,6 @@ library
                 , Ray.Camera
                 , Ray.Core
                 , Ray.Image
-                , Ray.Materials
                 , Ray.Shapes
                 , Ray.Types
                 , Ray.Util
