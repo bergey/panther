@@ -58,5 +58,5 @@ testScene = Scene {
     _lamps = [PointLamp (P (V3 8 0 8)) 40
               , PointLamp (p3 0 0 (-8)) (V3 40 0 0) ],
     -- lamps = [ParallelLamp (V3 0 0 (-1)) 100],
-    _visibles = [Object (SSphere (Sphere 0 1)) 1]
+    _visibles = [Object (Sphere 0 1) 1]
     }

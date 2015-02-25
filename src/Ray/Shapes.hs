@@ -41,8 +41,8 @@ onRaySegment ray d = elem d (ray ^. rayt)
 epsilonFactor :: Double
 epsilonFactor = 5e-4
 
-instance Intersectable Sphere where
-      type IntersectionData Sphere = ()
+instance Intersectable Shape where
+      type IntersectionData Shape = ()
       intersect (Sphere center radius) ray =
         -- http://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter1.htm
         case filter (onRaySegment ray) (quadForm a b c) of
@@ -57,10 +57,7 @@ instance Intersectable Sphere where
           c = quadrance (from .-. center) - radius * radius
           from = ray ^. rayOrigin
           dir = ray ^. rayDir
-
-instance Intersectable Plane where
-    type IntersectionData Plane = ()
-    intersect (Plane normal d) ray =
+      intersect (Plane normal d) ray =
         let
             p = ray ^. rayOrigin . _Point
             t = (d - dot p normal)  / dot (ray ^. rayDir) normal
@@ -72,11 +69,6 @@ instance Intersectable Plane where
                 _material = ()
                 }
         else Nothing
-
-instance Intersectable Shape where
-    type IntersectionData Shape = ()
-    intersect (SSphere s) = intersect s
-    intersect (SPlane p) = intersect p
 
 instance Intersectable a => Intersectable [a] where
     type IntersectionData [a] = IntersectionData a

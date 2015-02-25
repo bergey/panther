@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Unit Tests
@@ -28,12 +29,12 @@ tests = testGroup "Panther Tests" [
          \dir -> dir /= 0 ==>
                  intersect (Sphere 0 1) (mkRay 0 (normalize dir) 0) ^?! _Just . tHit =~ 1,
          testProperty "sphere has fixed r" $
-         \(s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
+         \(getSphere -> s@(Sphere c r), dir) -> dir /= 0 && r > 0 ==>
                                    intersect s (mkRay c (normalize dir) 0) ^?! _Just . tHit =~ r
          ],
     testGroup "plane" [
         testProperty "all rays intersect a plane" $
-        \(plane, ray) -> isJust (intersect (plane :: Plane) ray)
+        \(getPlane -> plane, ray) -> isJust (intersect (plane) ray)
                           || isJust (intersect plane $ ray & rayDir *~ -1)
                       ]
     ]
@@ -57,14 +58,26 @@ instance (Num a, Ord a, Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a)
 instance Arbitrary Ray where
     arbitrary = mkRay <$> arbitrary <*> (getNonZero <$> arbitrary) <*> arbitrary
 
+data Sphere = SSphere Shape
+              deriving (Show)
+
+getSphere :: Sphere -> Shape
+getSphere (SSphere s) = s
+
 instance Arbitrary Sphere where
-    arbitrary = Sphere <$> arbitrary <*> arbitrary
+    arbitrary = SSphere <$> (Sphere <$> arbitrary <*> arbitrary)
+
+data Plane = SPlane Shape
+              deriving (Show)
+
+getPlane :: Plane -> Shape
+getPlane (SPlane s) = s
 
 instance Arbitrary Plane where
-    arbitrary = Plane <$> arbitrary <*> arbitrary
+    arbitrary = SPlane <$> (Plane <$> arbitrary <*> arbitrary)
 
 instance Arbitrary Shape where
-    arbitrary = oneof [ SSphere <$> arbitrary, SPlane <$> arbitrary ]
+    arbitrary = oneof [ getSphere <$> arbitrary, getPlane <$> arbitrary ]
 
 ------------------------------------------------------------
     -- Approximate Comparison for Doubles, Points

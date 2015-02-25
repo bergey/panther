@@ -59,14 +59,8 @@ mkRay p u s = Ray p u nonNegative s
 -- (if tracing from lamp to eye) or the accumulated absorption (if
 -- tracing from eye to lamp).
 
-data Sphere = Sphere !P3D !Double
-            deriving Show
-
-data Plane = Plane !V3D !Double
-           deriving Show
-
-data Shape = SSphere Sphere
-           | SPlane Plane
+data Shape = Sphere !P3D !Double
+           | Plane !V3D !Double
            deriving Show
 
 -- TODO check definition of Reflectance, Reflectivity, &c.
