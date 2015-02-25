@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeFamilies #-}
 
 -- | Geometric objects and their instances.
@@ -5,25 +6,12 @@
 module Ray.Shapes where
 
 import Ray.Types
+import Ray.Imports
 import Solve
 
-import Linear
-import Linear.Affine
-import qualified Numeric.Interval as I
-import Numeric.Interval (Interval, (...))
+-- import qualified Numeric.Interval as I
+-- import Numeric.Interval (Interval, (...))
 
-import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, filter, Num(..), (.), (/), const, fmap, (/=), flip)
--- import Control.Monad.Identity
--- import Control.Monad.Reader
-import Data.Maybe
-import Data.Traversable
-import Data.Distributive
-import Data.Ord (comparing)
-import Data.Foldable
-import Control.Applicative
-import Control.Lens hiding ((...))
-import Data.Bool
-import Data.Semigroup
 import Data.Vector (Vector, (!))
 
 class Intersectable a where
@@ -36,7 +24,7 @@ instance Intersectable Object where
                                        & _Wrapped . _Just . material .~ mat
 
 onRaySegment :: Ray -> Double -> Bool
-onRaySegment ray d = I.elem d (ray ^. rayt)
+onRaySegment ray d = elem d (ray ^. rayt)
 
 -- | A multiplier of 'intersection' tHit' to calculate ''tEpsilon'
 -- PBRT v2 p. 123 suggests the value as effective in practice
@@ -79,9 +67,9 @@ intersectTriangle :: Vector P3D -> Maybe (Vector V3D) -> Ray -> V3 Int
                      -> Option (Intersection ())
 intersectTriangle ps ns ray indices =
     if divisor /= 0
-       && I.elem b1 (0...1)
-       && I.elem b2 (0...1)
-       && I.elem t (ray ^. rayt)
+       && elem b1 (0...1)
+       && elem b2 (0...1)
+       && elem t (ray ^. rayt)
     then Option . Just $ Intersection t ε normal ()
     else Option Nothing
   where

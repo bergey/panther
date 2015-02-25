@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
@@ -7,27 +8,15 @@
 
 module Ray.Types where
 
+import Ray.Imports
 import Ray.Util
 
-import           Linear
-import           Linear.Affine
-import           Linear.Projection
-import System.Random.MWC
-import Numeric.Interval (Interval, (...))
-
-import Prelude (Double, Int, realToFrac, IO, ($), Real, Fractional, Show)
 import Control.Lens.TH
 import Control.Monad.Identity
 import Control.Monad.Reader
-import Data.Maybe
 import Data.Array
-import Data.Traversable
-import Data.Distributive
-import Data.Ord
-import Data.Foldable
-import Control.Applicative
 import Data.Vector (Vector(..))
-import Data.Semigroup
+import System.Random.MWC
 
 type V3D = V3 Double
 type P3D = Point V3 Double

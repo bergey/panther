@@ -1,13 +1,15 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 -- | Converting between pixel-centric and ray-centric models.
 
 module Ray.Image where
 
 import Ray.Types
+import Ray.Imports
 
 import Codec.Picture
 import Codec.Picture.Types
 import Codec.Picture.Jpg (encodeJpeg)
-import Linear
 import Data.Array
 import Data.Word
 import qualified Data.ByteString.Lazy as BS

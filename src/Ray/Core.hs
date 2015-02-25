@@ -1,3 +1,4 @@
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveFunctor #-}
 
 -- | The main rendering infrastructure, as parameterized by the Algo type.
@@ -10,16 +11,10 @@ import Ray.Image
 import Ray.Shapes
 import Ray.Algorithms
 import Ray.Util
+import Ray.Imports
 
 import Codec.Picture
-import Linear
-import Linear.Affine
 import Data.Array
-
-import Control.Applicative
-import Data.Traversable
-import Control.Lens
-import Data.Semigroup
 
 render :: Algo -> Scene -> IO (Image PixelRGBF)
 render = runM getImg

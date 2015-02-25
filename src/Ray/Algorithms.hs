@@ -1,3 +1,5 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 -- | Rendering algorithms, including various sampling and integration strategies.
 
 module Ray.Algorithms where
@@ -5,26 +7,12 @@ module Ray.Algorithms where
 import Ray.Types
 import Ray.Shapes
 import Ray.Util
+import Ray.Imports
 
-import Prelude (Num(..), Floating(..), Fractional(..), Double, ($), (.), const,
-                (!!), length, Int, Integer)
-import Data.Foldable
-import Linear
-import Linear.Affine
 import System.Random.MWC
-import Numeric.Interval (Interval, (...))
-import Data.Array
-
-import Control.Applicative
-import Control.Lens hiding ((...))
-import Data.Maybe
-import Data.List (genericLength)
-import Control.Monad
 import Control.Monad.Reader
-import Data.Semigroup
-import Data.Semigroup.Foldable
-
--- import qualified System.Random.MWC as R
+import Data.Array
+import Data.List (genericLength)
 
 naiveRenderer res = Algo {
     _samplesPerPixel = 1,

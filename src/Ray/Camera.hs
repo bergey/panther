@@ -1,15 +1,11 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+
 -- |
 
 module Ray.Camera where
 
 import Ray.Types
-
-import Linear
-import Linear.Affine
-
-import Control.Lens
-import Control.Applicative
--- import Control.Monad.Reader
+import Ray.Imports
 
 inverseCameraMatrix :: V2 Int -> Camera -> M44 Double
 inverseCameraMatrix (V2 xres yres) cam = invLook !*! persp where
