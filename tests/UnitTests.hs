@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Unit Tests
 
@@ -11,14 +10,9 @@ module Main where
 import Test.Tasty.QuickCheck
 import Test.Tasty
 
+import Types -- Arbitrary instances
 import Ray
-import Linear
-import Linear.Affine
-
-import Control.Applicative
-import Control.Lens
-import Data.Maybe
-import Data.Semigroup
+import Ray.Imports
 
 main :: IO ()
 main = defaultMain tests
@@ -40,45 +34,6 @@ tests = testGroup "Panther Tests" [
                       ]
     ]
 
-nonZero :: (Num a, Ord a, Arbitrary a) => Gen a
-nonZero = getNonZero <$> arbitrary
-
-instance (Num a, Ord a, Arbitrary a) => Arbitrary (V2 a) where
-    arbitrary = V2 <$> arbitrary <*> arbitrary
-
-instance (Num a, Ord a, Arbitrary a) => Arbitrary (V3 a) where
-    arbitrary = V3 <$> nonZero <*> nonZero <*> nonZero
-
-instance (Num a, Ord a, Arbitrary a) => Arbitrary (V4 a) where
-    arbitrary = V4 <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
-
-instance (Num a, Ord a, Arbitrary a, Arbitrary (v a)) => Arbitrary (Point v a)
-                                                                                where
-    arbitrary = P <$> arbitrary
-
-instance Arbitrary Ray where
-    arbitrary = mkRay <$> arbitrary <*> (getNonZero <$> arbitrary) <*> arbitrary
-
-data Sphere = SSphere Shape
-              deriving (Show)
-
-getSphere :: Sphere -> Shape
-getSphere (SSphere s) = s
-
-instance Arbitrary Sphere where
-    arbitrary = SSphere <$> (Sphere <$> arbitrary <*> arbitrary)
-
-data Plane = SPlane Shape
-              deriving (Show)
-
-getPlane :: Plane -> Shape
-getPlane (SPlane s) = s
-
-instance Arbitrary Plane where
-    arbitrary = SPlane <$> (Plane <$> arbitrary <*> arbitrary)
-
-instance Arbitrary Shape where
-    arbitrary = oneof [ getSphere <$> arbitrary, getPlane <$> arbitrary ]
 
 ------------------------------------------------------------
     -- Approximate Comparison for Doubles, Points
@@ -97,5 +52,12 @@ instance Approx Double where
 -- instance Epsilon a => Approx a where
 --     a =~ b = nearZero $ a - b
 
-instance (Metric f, Floating a, Ord a) => Approx (f a) where
+-- instance (Metric f, Floating a, Ord a) => Approx (f a) where
+--     u =~ v = distance u v < ε
+instance (Floating a, Ord a) => Approx (Point V3 a) where
     u =~ v = distance u v < ε
+
+instance Approx a => Approx (Maybe a) where
+    Nothing =~ Nothing = True
+    Just a =~ Just b = a =~ b
+    _ =~ _ = False

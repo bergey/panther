@@ -83,8 +83,11 @@ test-suite UnitTests
                , tasty
                , semigroups >= 0.15.2 && < 0.17
                , tasty-quickcheck
+               , tasty-hunit
                , QuickCheck
                , lens
                , linear
                , panther
+               , vector >= 0.10 && < 0.11
+               , random >= 1.1 && < 1.2
   default-language: Haskell2010
