@@ -31,4 +31,5 @@ getInverseCamMatrix =
 
 -- :: Spectrum -> SurfaceIntegrator -> Ray -> Maybe Intersection -> M Spectrum
 
+sampleCamera :: Camera
 sampleCamera = Camera (P (V3 0 0 5)) (P (V3 0 0 0)) (V3 0 1 0) (27 * pi / 180) 1

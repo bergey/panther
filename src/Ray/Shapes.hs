@@ -9,8 +9,7 @@ import Ray.Types
 import Ray.Imports
 import Solve
 
--- import qualified Numeric.Interval as I
--- import Numeric.Interval (Interval, (...))
+import qualified Numeric.Interval as I
 
 import Data.Vector (Vector, (!))
 
@@ -24,7 +23,7 @@ instance Intersectable Object where
                                        & _Wrapped . _Just . material .~ mat
 
 onRaySegment :: Ray -> Double -> Bool
-onRaySegment ray d = elem d (ray ^. rayt)
+onRaySegment ray d = I.elem d (ray ^. rayt)
 
 -- | A multiplier of 'intersection' tHit' to calculate ''tEpsilon'
 -- PBRT v2 p. 123 suggests the value as effective in practice
@@ -39,23 +38,23 @@ instance Intersectable Shape where
          [] -> Option Nothing
          roots -> let
              dist = minimum roots
-             pt = from .+^ (dist *^ dir)
+             pt = o .+^ (dist *^ dir)
              in Option . Just $ Intersection dist (epsilonFactor * dist) (pt .-. center) ()
         where
           a = quadrance dir
-          b = 2 * dir `dot` (from .-. center)
-          c = quadrance (from .-. center) - radius * radius
-          from = ray ^. rayOrigin
+          b = 2 * dir `dot` (o .-. center)
+          c = quadrance (o .-. center) - radius * radius
+          o = ray ^. rayOrigin
           dir = ray ^. rayDir
-      intersect (Plane normal d) ray =
+      intersect (Plane nrm d) ray =
         let
             p = ray ^. rayOrigin . _Point
-            t = (d - dot p normal)  / dot (ray ^. rayDir) normal
+            t = (d - dot p nrm)  / dot (ray ^. rayDir) nrm
         in if onRaySegment ray t then
             Option . Just $ Intersection {
                 _tHit = t,
                 _tEpsilon = epsilonFactor * t,
-                _normal = normal,
+                _normal = nrm,
                 _material = ()
                 }
         else Option Nothing
@@ -65,15 +64,15 @@ instance Intersectable Shape where
 -- Algorithm from PBRTv2 p. 140-145
 intersectTriangle :: Vector P3D -> Maybe (Vector V3D) -> Ray -> V3 Int
                      -> Option (Intersection ())
-intersectTriangle ps ns ray indices =
+intersectTriangle ps ns ray ixs =
     if divisor /= 0
-       && elem b1 (0...1)
-       && elem b2 (0...1)
-       && elem t (ray ^. rayt)
-    then Option . Just $ Intersection t ε normal ()
+       && I.elem b1 (0...1)
+       && I.elem b2 (0...1)
+       && I.elem t (ray ^. rayt)
+    then Option . Just $ Intersection t ε nrm ()
     else Option Nothing
   where
-    V3 p1 p2 p3 = fmap (ps !) indices
+    V3 p1 p2 p3 = fmap (ps !) ixs
     s = ray ^. rayOrigin .-. p1
     e1 = p2 .-. p1
     e2 = p3 .-. p1
@@ -85,7 +84,7 @@ intersectTriangle ps ns ray indices =
     b1 = dot s s1 * invDivisor
     b2 = dot d s2 * invDivisor
     t = dot e2 s2 * invDivisor
-    normal = case ns of
+    nrm = case ns of
         Nothing -> -- pick normal from vertices
             e1 `cross` e2
         Just ns' -> -- interpolate shading normals
@@ -93,7 +92,7 @@ intersectTriangle ps ns ray indices =
               barycentric :: V3D
               barycentric = V3 b1 b2 (1 - b1 - b2)
               normals :: V3 V3D
-              normals = (ns' !) <$> indices
+              normals = (ns' !) <$> ixs
               weighted :: V3 V3D
               weighted =  (*^) <$> barycentric <*> normals
     ε = 1e-3 * t

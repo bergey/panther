@@ -1,4 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 -- | Rendering algorithms, including various sampling and integration strategies.
 
@@ -14,6 +15,7 @@ import Control.Monad.Reader
 import Data.Array
 import Data.List (genericLength)
 
+naiveRenderer :: V2 Int -> Algo
 naiveRenderer res = Algo {
     _samplesPerPixel = 1,
     _samplesPerCameraRay = 10,
@@ -50,40 +52,40 @@ boxFilter = fmap $ mean . fmap _sampleValue
 -- | @ambientintegrator@ ignores light sources, and returns the
 -- color of the surface directly.
 ambientIntegrator :: SurfaceIntegrator
-ambientIntegrator _n _ ix = return $ ix ^. material
+ambientIntegrator _n _ isect = return $ isect ^. material
 
 -- | @directLightIntegrator@ measures direct lighting, ignoring any
 -- paths with multiple bounces.  It ignores the number of samples
 -- parameter.
 directLightIntegrator :: SurfaceIntegrator
-directLightIntegrator _n ray ix = do
+directLightIntegrator _n ray isect = do
     ls <- view $ scene . lamps
     os <- view $ scene . visibles
-    return . sum $ directLightContribution os ray ix <$> ls
+    return . sum $ directLightContribution os ray isect <$> ls
 
 -- | @oneRandomlightintegrator@ picks a light at random for each sample, and
 -- calculates the direct contribution from that light.
 oneRandomLightIntegrator :: SurfaceIntegrator
-oneRandomLightIntegrator n ray ix = do
+oneRandomLightIntegrator n ray isect = do
     allLamps <- view $ scene . lamps
     lampSamples <- choose allLamps n
     os <- view $ scene . visibles
     let weight = genericLength allLamps / r2f n
-    return . (* weight) . sum $ directLightContribution os ray ix <$> lampSamples
+    return . (* weight) . sum $ directLightContribution os ray isect <$> lampSamples
 
 -- | @directLightContribution ls os ray ix@ calculates the light
 -- reaching @ix@ directly from the light l, accounting for
 -- shading by @os@.
 directLightContribution :: [Object] -> Ray -> Intersection Spectrum -> Lamp ->
                           Spectrum
-directLightContribution os ray ix l = reflectance * incoming
+directLightContribution os ray isect l = reflectance * incoming
   where
-    reflectance = ix ^. material
-    incoming = directLightArriving os q (ix ^. tEpsilon) l
-    q = intersectionPt ray ix
+    reflectance = isect ^. material
+    incoming = directLightArriving os q (isect ^. tEpsilon) l
+    q = intersectionPt ray isect
 
 intersectionPt :: Ray -> Intersection a -> P3D
-intersectionPt ray ix = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (ix ^. tHit)
+intersectionPt ray isect = (ray ^. rayOrigin) .+^ (ray ^. rayDir) ^* (isect ^. tHit)
 
 -- | @directLightArriving os q ε l@ calculates the light reaching
 -- point q from light l, accounting for possible shading from the
@@ -136,6 +138,7 @@ mkMean = Mean 1
 instance Num a => Semigroup (Mean a) where
     Mean ctA a <> Mean ctB b = Mean (ctA+ctB) (a+b)
 
+-- Orphan instance
 instance Ix i => Foldable1 (Array i)
 
 -- | A uniform linear tone mapping due to Greg Ward.  As described in

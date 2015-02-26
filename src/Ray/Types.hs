@@ -11,11 +11,9 @@ module Ray.Types where
 import Ray.Imports
 import Ray.Util
 
-import Control.Lens.TH
-import Control.Monad.Identity
 import Control.Monad.Reader
 import Data.Array
-import Data.Vector (Vector(..))
+import Data.Vector (Vector)
 import System.Random.MWC
 
 type V3D = V3 Double
@@ -77,7 +75,7 @@ data Intersection a = Intersection {
     _tEpsilon :: !Double,
     _normal :: Dir,
     _material :: a
-    } deriving (Functor)
+    } deriving (Functor, Show)
 
 -- The Semigroup instance picks the *closest* intersection
 instance Semigroup (Intersection a) where

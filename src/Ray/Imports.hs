@@ -28,7 +28,7 @@ module Ray.Imports
 
 import Prelude ((!!), ($), (.), (/), (/=), (=<<), (>>=),
                 Double, Float, IO, Int, Integer,
-                Floating(..), Fractional(..), Num(..), Real(..), Show(..),
+                Floating(..), Fractional(..), Num(..), Real(..), Show(..), Functor(..), Monad(..),
                 const, filter, flip, fmap, length, realToFrac, return, round, zip,
                 error)
 
@@ -37,7 +37,7 @@ import Control.Lens hiding ((...))
 -- import Control.Monad
 import Data.Bool
 import Data.Distributive
-import Data.Foldable
+import Data.Foldable hiding (elem)
 import Data.Maybe
 import Data.Ord
 import Data.Semigroup

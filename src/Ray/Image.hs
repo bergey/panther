@@ -9,10 +9,8 @@ import Ray.Imports
 
 import Codec.Picture
 import Codec.Picture.Types
-import Codec.Picture.Jpg (encodeJpeg)
 import Data.Array
 import Data.Word
-import qualified Data.ByteString.Lazy as BS
 
 -- clamp :: Double -> Double
 clamp :: (Num a, Ord a) => a -> a

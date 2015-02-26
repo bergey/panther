@@ -9,8 +9,6 @@ import Ray.Types
 import Ray.Camera
 import Ray.Image
 import Ray.Shapes
-import Ray.Algorithms
-import Ray.Util
 import Ray.Imports
 
 import Codec.Picture

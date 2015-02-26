@@ -22,12 +22,15 @@ library
                 , Ray.Camera
                 , Ray.Core
                 , Ray.Image
+                -- exposed for tests
+                , Ray.Imports
                 , Ray.Shapes
                 , Ray.Types
                 , Ray.Util
                 , Solve
   -- other-modules:       
   -- other-extensions:    
+  ghc-options:    -Wall -Werror
   build-depends:
                 base >=4.7 && <4.8
               , linear >=1.13 && <1.17
