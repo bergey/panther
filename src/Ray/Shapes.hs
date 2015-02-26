@@ -78,7 +78,7 @@ intersectTriangle ps ns ray ixs =
     e2 = p3 .-. p1
     d = ray ^. rayDir
     s1 = d `cross` e2
-    s2 = d `cross` e1
+    s2 = s `cross` e1
     divisor = dot s1 e1
     invDivisor = 1 / divisor
     b1 = dot s s1 * invDivisor
@@ -88,7 +88,7 @@ intersectTriangle ps ns ray ixs =
         Nothing -> -- pick normal from vertices
             e1 `cross` e2
         Just ns' -> -- interpolate shading normals
-            getSum $ foldMap Sum weighted where
+            sum weighted where
               barycentric :: V3D
               barycentric = V3 b1 b2 (1 - b1 - b2)
               normals :: V3 V3D
