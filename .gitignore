@@ -3,3 +3,8 @@
 *.hi
 *.o
 /dist/
+/.cabal-sandbox/
+/.cabbages/
+/cabal.config
+/cabal.sandbox.config
+/*.png
